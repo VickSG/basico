@@ -1,15 +1,18 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Socket } from 'ngx-socket-io';
 import { Usuario } from '../classes/usuario';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
 })
 export class WebsocketService {
   socketStatus: boolean = false;
-  usuario!: Usuario;
+  usuario: Usuario | null | undefined;
 
-  constructor(private socket: Socket) {
+  router = inject(Router);
+  socket = inject(Socket);
+  constructor() {
     this.cargarStorage();
     this.checkStatus();
   }
@@ -18,6 +21,7 @@ export class WebsocketService {
     this.socket.on('connect', () => {
       console.log('Conectado al servidor');
       this.socketStatus = true;
+      this.cargarStorage();
     });
 
     this.socket.on('disconnect', () => {
@@ -51,6 +55,17 @@ export class WebsocketService {
     });
   }
 
+  logoutWS() {
+    this.usuario = null;
+    localStorage.removeItem('usuario');
+    const payload = {
+      nombre: 'sin-nombre'
+    };
+
+    this.emit('configurar-usuario', payload, () => { });
+    this.router.navigateByUrl('');
+  }
+
   guardarStorage() {
     localStorage.setItem('usuario', JSON.stringify(this.usuario))
   }
@@ -58,11 +73,11 @@ export class WebsocketService {
   cargarStorage() {
     if (localStorage.getItem('usuario')) {
       this.usuario = JSON.parse(localStorage.getItem('usuario') || '')
-      this.loginWS(this.usuario.nombre);
+      this.loginWS(this.usuario!.nombre);
     }
   }
 
-  getUsuario(){
+  getUsuario() {
     return this.usuario;
   }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { WebsocketService } from '../../services/websocket.service';
 
 @Component({
@@ -8,6 +8,10 @@ import { WebsocketService } from '../../services/websocket.service';
 })
 export class MensajesComponent {
 
-  constructor(public wsService: WebsocketService) { }
+  wsService = inject(WebsocketService);
+  constructor() { }
 
+  salir() {
+    this.wsService.logoutWS();
+  }
 }
